@@ -6,8 +6,8 @@ from pytest import raises
 import pytest
 parametrize = pytest.mark.parametrize
 
-from DuplicateCollector import metadata
-from DuplicateCollector.main import main
+from duplicates import metadata
+from duplicates.main import main
 
 
 class TestMain(object):

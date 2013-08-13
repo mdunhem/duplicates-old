@@ -4,7 +4,7 @@ import sys
 from setuptools import setup, find_packages
 
 sys.path.append('.')
-from DuplicateCollector import metadata
+from duplicates import metadata
 
 
 def read(filename):
@@ -59,11 +59,11 @@ setup_dict = dict(
     zip_safe=False,  # don't use eggs
     entry_points={
         'console_scripts': [
-            'DuplicateCollector_cli = DuplicateCollector.main:entry_point'
+            'duplicates_cli = duplicates.main:entry_point'
         ],
         # if you have a gui, use this
         # 'gui_scripts': [
-        #     'DuplicateCollector_gui = DuplicateCollector.gui:entry_point'
+        #     'duplicates_gui = duplicates.gui:entry_point'
         # ]
     }
 )

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""":mod:`DuplicateCollector.main` -- Program entry point
+""":mod:`duplicates.main` -- Program entry point
 """
 
 from __future__ import print_function
@@ -7,7 +7,7 @@ from __future__ import print_function
 import argparse
 import sys
 
-from DuplicateCollector import metadata
+from duplicates import metadata
 
 
 def main(argv):

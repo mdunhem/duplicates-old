@@ -36,7 +36,7 @@ sys.path.append('.')
 from setup import setup_dict
 
 ## Constants
-CODE_DIRECTORY = 'DuplicateCollector'
+CODE_DIRECTORY = 'duplicates'
 DOCS_DIRECTORY = 'docs'
 TESTS_DIRECTORY = 'tests'
 PYTEST_FLAGS = ['--doctest-modules']
@@ -224,7 +224,7 @@ def run(args):
     # executable. So we just pass the package name in as the executable name,
     # since it's close enough. This should never be seen by an end user
     # installing through Setuptools anyway.
-    from DuplicateCollector.main import _main
+    from duplicates.main import _main
     raise SystemExit(_main([CODE_DIRECTORY] + args))
 
 
