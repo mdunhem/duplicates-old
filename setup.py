@@ -59,7 +59,7 @@ setup_dict = dict(
     zip_safe=False,  # don't use eggs
     entry_points={
         'console_scripts': [
-            'duplicates_cli = duplicates.main:entry_point'
+            'duplicates = duplicates.main:entry_point'
         ],
         # if you have a gui, use this
         # 'gui_scripts': [

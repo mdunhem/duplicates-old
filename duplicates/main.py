@@ -6,8 +6,10 @@ from __future__ import print_function
 
 import argparse
 import sys
+import os
 
 from duplicates import metadata
+from duplicates import scanner
 
 
 def main(argv):
@@ -21,7 +23,7 @@ def main(argv):
         author_strings.append('Author: {0} <{1}>'.format(name, email))
 
     epilog = '''
-{project} {version}
+{project} v{version}
 
 {authors}
 URL: <{url}>
@@ -40,8 +42,13 @@ URL: <{url}>
         '-v', '--version',
         action='version',
         version='{0} {1}'.format(metadata.project, metadata.version))
+    arg_parser.add_argument('-p', '--path', action='store_true', default=os.getcwd())
 
-    arg_parser.parse_args(args=argv[1:])
+    args = arg_parser.parse_args(args=argv[1:])
+
+    tool = scanner.Scanner(args)
+
+    tool.scan()
 
     print(epilog)
 
