@@ -30,4 +30,5 @@ class DuplicateCollector(object):
         else:
             with open('DuplicatesFound.txt', 'w') as file:
                 for duplicate in self.collection:
-                    file.write('Duplicate found: %s and %s\n\n' %(duplicate.fileOne, duplicate.fileTwo))
+                    file.write(str(duplicate)))
+                    # file.write('Duplicate found: %s and %s\n\n' %(duplicate.fileOne, duplicate.fileTwo))

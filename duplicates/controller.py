@@ -19,8 +19,4 @@ class Controller:
             duplicateCollector.write(True)
         else:
             duplicateCollector.write()
-        
     
-    # def display(self):
-    #     print parsedArgs.description
-    #     print parsedArgs.path
