@@ -15,10 +15,10 @@ class Options:
     def parse(self):
         parsedArgs = self.parser.parse_args(self.args[1:])
 
-        if parsedArgs.description:
-            return self._epilog()
-        elif parsedArgs.verbose:
-            print parsedArgs
+        # if parsedArgs.description:
+        #     return self._epilog()
+        # elif parsedArgs.verbose:
+        #     print parsedArgs
         return parsedArgs
 
     ##
@@ -32,25 +32,25 @@ class Options:
             description = metadata.description,
             epilog = self._epilog()
         )
-        # self.parser.add_argument(
-        #     '-v', '--version',
-        #     action = 'version',
-        #     version = '{0} {1}'.format(metadata.project, metadata.version)
-        # )
         self.parser.add_argument(
             '-v', '--verbose',
             help = 'print the results to the screen',
             action = 'store_true'
         )
         self.parser.add_argument(
-            '-n', '--nonrecursive',
-            help = 'should not recursively search through folders',
+            '-r', '--recursive',
+            help = 'should recursively search through folders',
             action = 'store_true'
         )
         self.parser.add_argument(
-            '-d', '--description',
-            help = 'print out the detailed description of this program',
+            '-d', '--display',
+            help = 'print out the results to stdout',
             action = 'store_true'
+        )
+        self.parser.add_argument(
+            '-w', '--write',
+            help = 'should write results to file',
+            action = 'store_false'
         )
         self.parser.add_argument(
             '-p', '--path',
