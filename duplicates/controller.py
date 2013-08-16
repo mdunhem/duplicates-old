@@ -27,13 +27,14 @@ class Controller:
             print errtxt
         finally:
             self.progressBar.done()
-            if self.display:
-                self._printToScreen()
+            self.writeResults()
+            # if self.display:
+            #     self._printToScreen()
 
-            if self.write:
-                self._writeToFile()
+            # if self.write:
+            #     self._writeToFile()
 
-    def write(self):
+    def writeResults(self):
         if self.display:
             self._printToScreen()
 
