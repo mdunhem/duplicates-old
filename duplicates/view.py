@@ -58,7 +58,7 @@ class ProgressBar(View):
         self.stdout.flush()
 
     def done(self):
-        self.stdout.write('\n')
+        self.stdout.write('  Done\n')
         self.stdout.flush()
 
     def _getProgress(self, increment):

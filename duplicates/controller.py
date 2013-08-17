@@ -3,6 +3,7 @@
 import sys
 import os
 import hashlib
+import Queue
 
 from threading import Thread
 from options import Options
@@ -20,19 +21,20 @@ class Controller:
 
     def run(self):
         try:
-            thread = Thread(target = self._checkForDuplicates)
-            thread.start()
-            thread.join()
+            searchForDuplicatesThread = SearchForDuplicatesThread(self.filesQueue, self.duplicatesQueue, self.root)
+            searchForDuplicatesThread.start()
+            searchForDuplicatesThread.join()
+            # traverseFilesThread = Thread(target = self._createFilesList)
+            # traverseFilesThread.start()
+            # traverseFilesThread.join()
+
+            # thread = Thread(target = self._checkForDuplicates)
+            # thread.start()
+            # thread.join()
         except Exception, errtxt:
             print errtxt
         finally:
-            self.progressBar.done()
             self.writeResults()
-            # if self.display:
-            #     self._printToScreen()
-
-            # if self.write:
-            #     self._writeToFile()
 
     def writeResults(self):
         if self.display:
@@ -55,31 +57,60 @@ class Controller:
 
         self.duplicates = []
 
+        self.filesQueue = Queue.Queue()
+        self.duplicatesQueue = Queue.Queue()
+        self.count = 0
+
+        self._createFilesQueue()
+
+        self._createFilesList()
+
         self.progressBar = ProgressBar()
-        self.progressBar.end = self._getFileCount()
+        self.progressBar.end = self.fileCount
 
     def _checkForDuplicates(self):
         hashes = {}
         self.progressBar.displayProgress()
-        for dirpath, dirnames, filenames in os.walk(self.path):
-            for filename in filenames:
-                self.progressBar.increment()
-                fullPath = os.path.join(dirpath, filename)
+        for file in self.files:
+            self.progressBar.increment()
+            try:
+                filePath = os.path.join(self.root, file)
                 hasher = hashlib.sha1()
-                for chunk in self._getChunk(open(fullPath, 'rb')):
+                for chunk in self._getChunk(filePath):
                     hasher.update(chunk)
-                fileID = (hasher.digest(), os.path.getsize(fullPath))
+                fileID = (hasher.digest(), os.path.getsize(filePath))
                 duplicate = hashes.get(fileID)
                 if duplicate:
-                    self._addDuplicate(fullPath, duplicate)
+                    self._addDuplicate(filePath, duplicate)
                 else:
-                    hashes[fileID] = fullPath
+                    hashes[fileID] = filePath
+            except Exception, e:
+                pass # For now, no need to do anything besides suppress any errors
+            finally:
                 self.progressBar.displayProgress()
+        self.progressBar.done()
+
+    def _createFilesQueue(self):
+        for root, directories, files in os.walk(self.path):
+            self.root = root
+            for file in files:
+                self.filesQueue.put(file)
+                self.count = self.count + 1
+
+    def _createFilesList(self):
+        self.files = []
+        self.fileCount = 0
+        for root, directories, files in os.walk(self.path):
+            self.root = root
+            for file in files:
+                self.files.append(file)
+                self.fileCount = self.fileCount + 1
 
     def _addDuplicate(self, fileOne, fileTwo):
         self.duplicates.append(Duplicate(fileOne, fileTwo))
 
-    def _getChunk(self, file, chunkSize = 1024):
+    def _getChunk(self, filePath, chunkSize = 1024):
+        file = open(filePath, 'rb')
         while True:
             chunk = file.read(chunkSize)
             if not chunk:
@@ -95,18 +126,80 @@ class Controller:
         return count
 
     def _printToScreen(self):
-        if len(self.duplicates) == 0:
+        if self.duplicatesQueue.empty():
             print 'No duplicates found'
         else:
-            for duplicate in self.duplicates:
-                print str(duplicate)
+            while not self.duplicatesQueue.empty():
+                print str(self.duplicatesQueue.get())
+        # if len(self.duplicates) == 0:
+        #     print 'No duplicates found'
+        # else:
+        #     for duplicate in self.duplicates:
+        #         print str(duplicate)
 
     def _writeToFile(self):
-        if len(self.duplicates) == 0:
+        if self.duplicatesQueue.empty():
             print 'No duplicates found'
         else:
+            print 'Found {0} duplicates'.format(str(self.duplicatesQueue.qsize()))
             with open('DuplicatesFound.txt', 'w') as file:
-                for duplicate in self.duplicates:
-                    file.write(str(duplicate))
+                while not self.duplicatesQueue.empty():
+                    file.write(str(self.duplicatesQueue.get()))
 
+        # if len(self.duplicates) == 0:
+        #     print 'No duplicates found'
+        # else:
+        #     print 'Found {0} duplicates'.format(str(len(self.duplicates)))
+        #     with open('DuplicatesFound.txt', 'w') as file:
+        #         for duplicate in self.duplicates:
+        #             file.write(str(duplicate))
 
+class SearchForDuplicatesThread(Thread):
+    def __init__(self, filesQueue, duplicatesQueue, root):
+        super(SearchForDuplicatesThread, self).__init__()
+        self.filesQueue = filesQueue
+        self.duplicatesQueue = duplicatesQueue
+        self.root = root
+        self.progressBar = ProgressBar()
+        self.progressBar.end = self.filesQueue.qsize()
+
+    def run(self):
+        hashes = {}
+        self.progressBar.displayProgress()
+        while not self.filesQueue.empty():
+            try:
+                file = self.filesQueue.get()
+                self.progressBar.increment()
+                filePath = os.path.join(self.root, file)
+                hasher = hashlib.sha1()
+                for chunk in self._getChunk(filePath):
+                    hasher.update(chunk)
+                fileID = (hasher.digest(), os.path.getsize(filePath))
+                duplicate = hashes.get(fileID)
+                if duplicate:
+                    self.duplicatesQueue.put(Duplicate(filePath, duplicate))
+                else:
+                    hashes[fileID] = filePath
+            except Exception, e:
+                pass
+            finally:
+                self.filesQueue.task_done()
+                self.progressBar.displayProgress()
+        self.progressBar.done()
+
+    def _getChunk(self, filePath, chunkSize = 1024):
+        file = open(filePath, 'rb')
+        while True:
+            chunk = file.read(chunkSize)
+            if not chunk:
+                return
+            yield chunk
+        
+
+class TraverseFilesThread(Thread):
+    def __init__(self, queue):
+        super(Thread, self).__init__()
+        self.queue = queue
+
+    def run(self):
+        pass
