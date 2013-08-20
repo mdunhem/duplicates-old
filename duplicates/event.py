@@ -1,8 +1,10 @@
+import sys
 
 class EventDispatcher(object):
     def __init__(self):
         super(EventDispatcher, self).__init__()
         self.handlers = []
+        self.events = []
 
     def add(self, eventName, handler):
         if eventName not in self.handlers:
@@ -15,10 +17,14 @@ class EventDispatcher(object):
             self.handlers[eventName].remove(handler)
 
     def dispatch(self, eventName, *args, **kwargs):
+        self.events.append(Event(eventName, *args, **kwargs))
         if eventName in self.handlers:
             event = Event(eventName, *args, **kwargs)
             for handler in self.handlers[eventName]:
                 handler(event)
+    
+    def get(self):
+        return self.events
 
 
 class Event(object):
