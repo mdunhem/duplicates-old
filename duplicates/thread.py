@@ -46,7 +46,7 @@ class ProcessFilesThread(threading.Thread):
                 filePath = os.path.join(root, file)
                 self.duplicate.add(filePath)
                 self.queue.task_done()
-            else:
+            elif not self.running:
                 self.eventDispatcher.dispatch('Thread.ProcessFiles.Done')
                 return
             self.lock.release()

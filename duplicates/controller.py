@@ -52,7 +52,9 @@ class Controller:
     
     def handleEvents(self):
         for event in self.eventDispatcher.get(): # event handling loop
-            if (event.name == 'Thread.ProcessFiles.Done'):
+            if (event.name == 'Thread.ScanFiles.Done'):
+                self.processFilesThread.running = False
+            elif (event.name == 'Thread.ProcessFiles.Done'):
                 self.view.output('\n')
                 self.view.output('Thread.ProcessFiles.Done')
                 self.view.output('\n')
@@ -61,14 +63,16 @@ class Controller:
                 
     
     def _printResults(self):
+        count = 1
         for files in self.duplicates.duplicatesList:
             self.view.output('#########')
             self.view.output('\n')
-            self.view.output(files)
+            self.view.output(str(count))
             self.view.output('\n')
             for file in self.duplicates.duplicatesList[files]:
                 self.view.output(file)
                 self.view.output('\n')
+            count += 1
 
     def _createFilesQueue(self):
         for root, directories, files in os.walk(self.path):
